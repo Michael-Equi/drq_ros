@@ -7,12 +7,10 @@ class pmbus:
     VOUT_MODE = 0b00000
     VOUT_N = 0b00000
 
-    def __init__(self, addr):
+    def __init__(self, addr, id=1):
+        self.busID = id
         self.address = addr
-        bus = SMBus(1)
-        bus.pec = True #untested
-        self.VOUT_MODE = bus.read_byte_data(self.address, 0x20)
-        bus.close()
+        self.VOUT_MODE = self._readBytePMBus(0x20)
         voutN = self.VOUT_MODE & 0b00011111
         self.VOUT_N = self.twos_comp(voutN, 5)
         print("DRQ1250 succesfully connected to PMBus... \n")
@@ -34,6 +32,33 @@ class pmbus:
         #print(bin(message))
         return message
 
+    #wrapper functions for reading/writing a word/byte to an address with pec
+    def _writeWordPMBus(self, cmd, word, pecByte=True):
+        bus = SMBus(self.busID)
+        bus.pec = pecByte
+        bus.write_word_data(self.address, cmd, word)
+        bus.close()
+
+    def _readWordPMBus(self, cmd, pecByte=True):
+        bus = SMBus(self.busID)
+        bus.pec = pecByte
+        data = bus.read_word_data(self.address, cmd, word)
+        bus.close()
+        return data
+
+    def _writeBytePMBus(self, cmd, byte, pecByte=True):
+        bus = SMBus(self.busID)
+        bus.pec = pecByte
+        bus.write_byte_data(self.address, cmd)
+        bus.close()
+
+    def _readBytePMBus(self, cmd, pecByte=True):
+        bus = SMBus(self.busID)
+        bus.pec = pecByte
+        data = bus.read_byte_data(self.address, cmd)
+        bus.close()
+        return data
+
     def setUVLimit(self, uvLimit):
 
         if(uvLimit > 32):
@@ -43,44 +68,34 @@ class pmbus:
             uvWarnLimit  = 34.0
             uvFaultLimit = 32.0
 
-        bus = SMBus(1)
         #bus.write_byte_data(self.address, 0x10, int(0b00000000))
-        bus.write_word_data(self.address, 0x59, self._encodePMBus(uvFaultLimit)) #This causes an error
-        bus.write_word_data(self.address, 0x58, self._encodePMBus(uvWarnLimit))  #The error shows up here or if this is commented out it shows up on under the getTempurature method
-        bus.close()
+        self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit)) #This causes an error
+        self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))  #The error shows up here or if this is commented out it shows up on under the getTempurature method
 
     def getVoltageIn(self):
-        bus = SMBus(1)
-        self.voltageIn = self._decodePMBus(bus.read_word_data(self.address, 0x88))
-        bus.close()
+        self.voltageIn = self._decodePMBus(self._readWordPMBus(0x88))
         return self.voltageIn
 
     def getVoltageOut(self):
-        bus = SMBus(1)
-        voltageOutMessage = bus.read_word_data(self.address, 0x8B)
-        bus.close()
+        voltageOutMessage = self._readWordPMBus(0x8B)
         self.voltageOut = voltageOutMessage*(2.0**self.VOUT_N)
         return self.voltageOut
 
     def getCurrent(self):
         bus = SMBus(1)
-        self.current = self._decodePMBus(bus.read_word_data(self.address, 0x8C))
+        self.current = self._decodePMBus(self._readWordPMBus(0x8C))
         bus.close()
         return self.current
 
     def getPowerOut(self, fromDRQ):
         if(fromDRQ == True):
-            bus = SMBus(1)
-            self.powerOut = self._decodePMBus(bus.read_word_data(self.address, 0x96))
-            bus.close()
+            self.powerOut = self._decodePMBus(self._readWordPMBus(0x96))
         else:
             self.powerOut = self.voltageOut * self.current
         return self.powerOut
 
     def getTempurature(self):
-        bus = SMBus(1)
-        self.tempurature = self._decodePMBus(bus.read_word_data(self.address, 0x8D))
-        bus.close()
+        self.tempurature = self._decodePMBus(self._readWordPMBus(0x8D))
         return self.tempurature
 
     #members for getting the status of the DRQ device
@@ -89,9 +104,7 @@ class pmbus:
         # BUSY | OFF | VOUT_OV_Fault | IOUT_OC_FAULT | VIN_UV_FAULT | TEMPURATURE | CML (command memory logic) | None
         # VOUT Fault | IOUT Fault | POUT  Fault | INPUT Fault | MFR_Specific | PWR_GD | Fans | Other | Unknown
         # Note: if PWR_GD is set then pwr is not good
-        bus = SMBus(1)
-        self.statusSummary = bus.read_word_data(self.address, 0x79)
-        bus.close()
+        self.statusSummary = self._readWordPMBus(0x79)
         status = {
             "busy" :          bool(self.statusSummary & (0b1<<15)),
             "off" :           bool(self.statusSummary & (0b1<<14)),
@@ -104,7 +117,7 @@ class pmbus:
             "iout_fault" :    bool(self.statusSummary & (0b1<<6)),
             "pout_fault" :    bool(self.statusSummary & (0b1<<5)),
             "input_fault" :   bool(self.statusSummary & (0b1<<4)),
-            "pwr_gd" :        bool(!(self.statusSummary & (0b1<<3))),
+            "pwr_gd" :        not bool(self.statusSummary & (0b1<<3)),
             "fan_fault" :     bool(self.statusSummary & (0b1<<2)),
             "other" :         bool(self.statusSummary & (0b1<<1)),
             "unknown" :       bool(self.statusSummary & (0b1<<0)),
