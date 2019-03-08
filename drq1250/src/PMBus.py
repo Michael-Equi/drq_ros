@@ -60,6 +60,7 @@ class pmbus:
         bus.close()
         return data
 
+    ################################### Functions for setting PMBus values
     def setUVLimit(self, uvLimit):
 
         if(uvLimit > 32):
@@ -67,11 +68,36 @@ class pmbus:
             uvFaultLimit = float(uvLimit)
         else:
             uvWarnLimit  = 34.0
-            uvFaultLimit = 32.
+            uvFaultLimit = 32.0
 
-        self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit)) #This causes an error
-        self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))  #The error shows up here or if this is commented out it shows up on under the getTempurature method
+        self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit))
+        self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))
 
+        self.storeUserAll()
+
+    def storeUserAll(self):
+        self._writeBytePMBus(0x15,0x00)
+
+    def restoreUserAll(self):
+        self._writeBytePMBus(0x16,0x00)
+
+    def restoreDefaultAll(self):
+        self._writeBytePMBus(0x12,0x00)
+
+    def clearFaults(self):
+        self._writeBytePMBus(0x03,0x00)
+
+    #See PMBus spec page 53-54 for information on the on/off functionality
+    def regOff(self, hard=False):
+        if hard:
+            self._writeBytePMBus(0x01,0x00) #Hard off
+        else:
+            self._writeBytePMBus(0x01,0x40) #Soft off
+
+    def regOn(self):
+        self._writeBytePMBus(0x01,0x80)
+
+    ################################### Functions for getting PMBus values
     def getVoltageIn(self):
         self.voltageIn = self._decodePMBus(self._readWordPMBus(0x88))
         return self.voltageIn
