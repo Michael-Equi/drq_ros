@@ -43,14 +43,14 @@ class pmbus:
     def _readWordPMBus(self, cmd, pecByte=True):
         bus = SMBus(self.busID)
         bus.pec = pecByte
-        data = bus.read_word_data(self.address, cmd, word)
+        data = bus.read_word_data(self.address, cmd)
         bus.close()
         return data
 
     def _writeBytePMBus(self, cmd, byte, pecByte=True):
         bus = SMBus(self.busID)
         bus.pec = pecByte
-        bus.write_byte_data(self.address, cmd)
+        bus.write_byte_data(self.address, cmd, byte)
         bus.close()
 
     def _readBytePMBus(self, cmd, pecByte=True):
@@ -74,8 +74,10 @@ class pmbus:
             uvWarnLimit  = minUnderVolt + 2
             uvFaultLimit = minUnderVolt
 
+        print("Old VIN UV Limit: " + str(self.getVinUVLimit()))
         self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit))
         self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))
+        print("New VIN UV Limit: " + str(self.getVinUVLimit()))
 
     def setVinOVLimit(self, ovLimit, maxOverVolt=110.0):
         """The VIN_OV_WARN_LIMIT command sets the value of the input voltage that causes an
@@ -90,8 +92,10 @@ class pmbus:
             ovWarnLimit  = maxOverVolt - 2
             ovFaultLimit = maxOverVolt
 
+        print("Old VIN OV Limit: " + str(self.getVinOVLimit()))
         self._writeWordPMBus(0x55, self._encodePMBus(ovFaultLimit))
         self._writeWordPMBus(0x57, self._encodePMBus(ovWarnLimit))
+        print("New VIN OV Limit: " + str(self.getVinOVLimit()))
 
     def setVoutOVLimit(self, ovLimit, maxOverVolt=15.6):
         """The VOUT_OV_WARN_LIMIT command sets the value of the output voltage at the
@@ -110,8 +114,10 @@ class pmbus:
         ovWarnLimit  = int(ovWarnLimit*(2**-self.VOUT_N))
         ovFaultLimit = int(ovFaultLimit*(2**-self.VOUT_N))
 
+        print("Old VOUT OV Limit: " + str(self.getVoutOVLimit()))
         self._writeWordPMBus(0x40, ovFaultLimit)
         self._writeWordPMBus(0x42, ovWarnLimit)
+        print("New VOUT OV Limit: " + str(self.getVoutOVLimit()))
 
     def setIoutOCLimit(self, ocLimit, maxOverCurrent=65.0):
         """The IOUT_OV_WARN_LIMIT command sets the value of the output current that causes
@@ -125,8 +131,16 @@ class pmbus:
             ocWarnLimit  = maxOverCurrent - 3
             ocFaultLimit = maxOverCurrent
 
+        print("Old IOT OC Limit: " + str(self.getIoutOCLimit()))
         self._writeWordPMBus(0x46, self._encodePMBus(ocFaultLimit))
         self._writeWordPMBus(0x4A, self._encodePMBus(ocWarnLimit))
+        print("New IOT OC Limit: " + str(self.getIoutOCLimit()))
+
+    def setIoutFaultResponse(self, byte):
+        #see page 37-40 on PMBus spec for info on response bytes
+        print("Old IOT Fault Response: " + bin(self.getIoutFaultResponse()))
+        self._writeBytePMBus(0x47, byte)
+        print("New IOT Fault Response: " + bin(self.getIoutFaultResponse()))
 
     def setOTLimit(self, otLimit, maxOverTemp=145.0):
         """The OT_WARN_LIMIT command set the temperature, in degrees Celsius, of the unit at
@@ -140,8 +154,23 @@ class pmbus:
             otWarnLimit  = maxOverTemp - 3
             otFaultLimit = maxOverTemp
 
+        print("Old OT Limit: " + str(self.getOTLimit()))
         self._writeWordPMBus(0x4F, self._encodePMBus(otFaultLimit))
         self._writeWordPMBus(0x51, self._encodePMBus(otWarnLimit))
+        print("New OT Limit: " + str(self.getOTLimit()))
+
+    def setFaultResponse(self, register, byte):
+        #see page 37-40 on PMBus spec for info on response bytes
+        """
+        DRQ1250 registers:
+        VIN UV  = 0x5A
+        VIN OV  = 0x56
+        VOUT OV = 0x41
+        OT      = 0x50
+        """
+        print("Old Fault Response: " + bin(self.getFaultResponse(register)))
+        return self._writeBytePMBus(register, byte)
+        print("New Fault Response: " + bin(self.getFaultResponse(register)))
 
     def setTonDelay(self, delay):
         """The TON_DELAY sets the time, in milliseconds, from when a start condition
@@ -246,21 +275,52 @@ class pmbus:
         #returns fault, warn
         return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
 
-    def getVinUVLimit(self):
+    def getVinOVLimit(self):
         #returns fault, warn
-        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+        return self._decodePMBus(self._readWordPMBus(0x55)), self._decodePMBus(self._readWordPMBus(0x57))
 
-    def getVinUVLimit(self):
+    def getVoutOVLimit(self):
         #returns fault, warn
-        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+        return self._readWordPMBus(0x40)*(2.0**self.VOUT_N), self._readWordPMBus(0x42)*(2.0**self.VOUT_N)
 
-    def getVinUVLimit(self):
+    def getIoutOCLimit(self):
         #returns fault, warn
-        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+        return self._decodePMBus(self._readWordPMBus(0x46)), self._decodePMBus(self._readWordPMBus(0x4A))
 
-    def getVinUVLimit(self):
+    def getOTLimit(self):
         #returns fault, warn
-        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+        return self._decodePMBus(self._readWordPMBus(0x4F)), self._decodePMBus(self._readWordPMBus(0x51))
+
+    def getTonDelay(self):
+        return self._decodePMBus(self._readWordPMBus(0x60))
+
+    def getTonRise(self):
+        return self._decodePMBus(self._readWordPMBus(0x61))
+
+    def getToffDelay(self):
+        return self._decodePMBus(self._readWordPMBus(0x64))
+
+    def getToffFall(self):
+        return self._decodePMBus(self._readWordPMBus(0x65))
+
+    def getSwitchingFreq(self):
+        #returns value in kHz
+        return self._decodePMBus(self._readWordPMBus(0x95))
+
+    def getIoutFaultResponse(self):
+        #see page 37-40 on PMBus spec for info on response bytes
+        return self._readBytePMBus(0x47)
+
+    def getFaultResponse(self, register):
+        #see page 37-40 on PMBus spec for info on response bytes
+        """
+        DRQ1250 registers:
+        VIN UV  = 0x5A
+        VIN OV  = 0x56
+        VOUT OV = 0x41
+        OT      = 0x50
+        """
+        return self._readBytePMBus(register)
 
     #members for getting the status of the DRQ device
     #see PMBUS spec part two pages 77-79
