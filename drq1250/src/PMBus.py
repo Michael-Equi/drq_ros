@@ -61,11 +61,12 @@ class pmbus:
         return data
 
     ################################### Functions for setting PMBus values
-    def setUVLimit(self, uvLimit, minUnderVolt=32.0):
+    def setVinUVLimit(self, uvLimit, minUnderVolt=32.0):
         """The VIN_UV_WARN_LIMIT command sets the value of the input voltage that causes an
         input voltage low warning. This value is typically greater than the input undervoltage
         fault threshold, VIN_UV_FAULT_LIMIT (Section 15.27). The VIN_UV_FAULT_LIMIT
         command sets the value of the input voltage that causes an input undervoltage fault."""
+        #min = 32, max = 75 on DRQ1250
         if(uvLimit > minUnderVolt):
             uvWarnLimit  = float(uvLimit) + 2
             uvFaultLimit = float(uvLimit)
@@ -76,25 +77,100 @@ class pmbus:
         self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit))
         self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))
 
-        self.storeUserAll()
+    def setVinOVLimit(self, ovLimit, maxOverVolt=110.0):
+        """The VIN_OV_WARN_LIMIT command sets the value of the input voltage that causes an
+        input voltage high warning. This value is typically less than the input overvoltage fault
+        threshold. The VIN_OV_FAULT_LIMIT command sets the value of the input voltage that causes an
+        input overvoltage fault."""
+        #min = 32, max = 110 on DRQ1250
+        if(ovLimit < maxOverVolt):
+            ovWarnLimit  = float(ovLimit) - 2
+            ovFaultLimit = float(ovLimit)
+        else:
+            ovWarnLimit  = maxOverVolt - 2
+            ovFaultLimit = maxOverVolt
 
-    def setTonDelay(self, delay, maxDelay=500):
+        self._writeWordPMBus(0x55, self._encodePMBus(ovFaultLimit))
+        self._writeWordPMBus(0x57, self._encodePMBus(ovWarnLimit))
+
+    def setVoutOVLimit(self, ovLimit, maxOverVolt=15.6):
+        """The VOUT_OV_WARN_LIMIT command sets the value of the output voltage at the
+        sense or output pins that causes an output voltage high warning. This value is typically
+        less than the output overvoltage threshold. The VOUT_OV_FAULT_LIMIT command sets the value
+        of the output voltage measured at the sense or output pins that causes an output
+        overvoltage fault."""
+        #min = 8.1, max=15.6 on DRQ1250
+        if(ovLimit < maxOverVolt):
+            ovWarnLimit  = float(ovLimit) - 1
+            ovFaultLimit = float(ovLimit)
+        else:
+            ovWarnLimit  = maxOverVolt - 1
+            ovFaultLimit = maxOverVolt
+
+        ovWarnLimit  = int(ovWarnLimit*(2**-self.VOUT_N))
+        ovFaultLimit = int(ovFaultLimit*(2**-self.VOUT_N))
+
+        self._writeWordPMBus(0x40, ovFaultLimit)
+        self._writeWordPMBus(0x42, ovWarnLimit)
+
+    def setIoutOCLimit(self, ocLimit, maxOverCurrent=65.0):
+        """The IOUT_OV_WARN_LIMIT command sets the value of the output current that causes
+        an output overcurrent warning. The IOUT_OC_FAULT_LIMIT command sets the value of the output current, in
+        amperes, that causes the overcurrent detector to indicate an overcurrent fault condition."""
+        #min = 59, max = 65 for DRQ1250
+        if(ocLimit < maxOverCurrent):
+            ocWarnLimit  = float(ocLimit) - 3
+            ocFaultLimit = float(ocLimit)
+        else:
+            ocWarnLimit  = maxOverCurrent - 3
+            ocFaultLimit = maxOverCurrent
+
+        self._writeWordPMBus(0x46, self._encodePMBus(ocFaultLimit))
+        self._writeWordPMBus(0x4A, self._encodePMBus(ocWarnLimit))
+
+    def setOTLimit(self, otLimit, maxOverTemp=145.0):
+        """The OT_WARN_LIMIT command set the temperature, in degrees Celsius, of the unit at
+        which it should indicate an Overtemperature Warning alarm. The OT_FAULT_LIMIT command
+        set the temperature, in degrees Celsius, of the unit at which it should indicate an Overtemperature Fault."""
+        #min = 30, max = 145 for DRQ1250
+        if(otLimit < maxOverTemp):
+            otWarnLimit  = float(otLimit) - 3
+            otFaultLimit = float(otLimit)
+        else:
+            otWarnLimit  = maxOverTemp - 3
+            otFaultLimit = maxOverTemp
+
+        self._writeWordPMBus(0x4F, self._encodePMBus(otFaultLimit))
+        self._writeWordPMBus(0x51, self._encodePMBus(otWarnLimit))
+
+    def setTonDelay(self, delay):
         """The TON_DELAY sets the time, in milliseconds, from when a start condition
         is received (as programmed by the ON_OFF_CONFIG command) until the output
         voltage starts to rise."""
-        if abs(delay) > maxDelay:
-            delay = maxDelay
+        #max delay is 500ms min is 1ms for DRQ1250
+        self._writeWordPMBus(0x60, self._encodePMBus(delay))
 
-        self._writeWordPMBus(0x60, self._encodePMBus(abs(delay)))
+    def setTonRise(self, time):
+        """The TON_RISE sets the time, in milliseconds, from when the output starts to rise until
+        the voltage has entered the regulation band."""
+        #max time is 100ms, min is 10ms for DRQ1250
+        self._writeWordPMBus(0x61, self._encodePMBus(time))
 
-    def setToffDelay(self, delay, maxDelay=500):
+
+    def setToffDelay(self, delay):
         """The TOFF_DELAY sets the time, in milliseconds, from a stop condition
         is received (as programmed by the ON_OFF_CONFIG command) until the unit
         stops transferring energy to the output."""
-        if abs(delay) > maxDelay:
-            delay = maxDelay
+        #max delay is 500ms, min is 0ms for DRQ1250
+        self._writeWordPMBus(0x64, self._encodePMBus(delay))
 
-        self._writeWordPMBus(0x64, self._encodePMBus(abs(delay)))
+    def setToffFall(self, time):
+        """The TOFF_FALL sets the time, in milliseconds, from the end of the turn-off delay time
+        (Section 16.5) until the voltage is commanded to zero. Note that this command can only be used
+        with a device whose output can sink enough current to cause the output voltage
+        to decrease at a controlled rate."""
+        #max time is 100ms, min is 10ms for DRQ1250
+        self._writeWordPMBus(0x65, self._encodePMBus(time))
 
 
     def storeUserAll(self):
@@ -165,6 +241,26 @@ class pmbus:
     def getTempurature(self):
         self.tempurature = self._decodePMBus(self._readWordPMBus(0x8D))
         return self.tempurature
+
+    def getVinUVLimit(self):
+        #returns fault, warn
+        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+
+    def getVinUVLimit(self):
+        #returns fault, warn
+        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+
+    def getVinUVLimit(self):
+        #returns fault, warn
+        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+
+    def getVinUVLimit(self):
+        #returns fault, warn
+        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
+
+    def getVinUVLimit(self):
+        #returns fault, warn
+        return self._decodePMBus(self._readWordPMBus(0x59)), self._decodePMBus(self._readWordPMBus(0x58))
 
     #members for getting the status of the DRQ device
     #see PMBUS spec part two pages 77-79

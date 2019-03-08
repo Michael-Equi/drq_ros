@@ -9,7 +9,7 @@ DRQ = pmbus(0x12) #New pmbus object with device address 0x12
 
 time.sleep(1)
 
-DRQ.setUVLimit(36.0)
+DRQ.setVinUVLimit(36.0)
 
 time.sleep(1)
 
