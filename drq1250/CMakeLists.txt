@@ -57,6 +57,8 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    SetValue.srv
    SetByte.srv
+   Float.srv
+   Byte.srv
  )
 
 ## Generate actions in the 'action' folder

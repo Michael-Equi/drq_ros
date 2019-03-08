@@ -2,8 +2,8 @@
 
 import rospy
 from drq1250.msg import DRQ1250
-from std_srvs.srv import SetBool
-from drq1250.srv import SetValue, SetByte
+from std_srvs.srv import SetBool, Trigger
+from drq1250.srv import SetValue, SetByte, Float, Byte
 from pmbus import PMBus
 import sys
 
@@ -138,6 +138,98 @@ def set_toff_fall_handle(value):
         return False, "Value out of bounds, should be between 10 and 100ms"
     return True, "Toff Fall set to: " + str(DRQ.getToffFall())
 rospy.Service("set_toff_fall", SetValue, set_toff_fall_handle)
+
+def store_user_all_handle(value):
+    try:
+        DRQ.storeUserAll()
+    except Exception as e:
+        return False, str(e)
+    return True, "User settings stored!"
+rospy.Service("store_user_all", Trigger, store_user_all_handle)
+
+def restore_user_all_handle(value):
+    try:
+        DRQ.restoreUserAll()
+    except Exception as e:
+        return False, str(e)
+    return True, "User settings restored!"
+rospy.Service("restore_user_all", Trigger, restore_user_all_handle)
+
+def restore_default_all_handle(value):
+    try:
+        DRQ.restoreDefaultAll()
+    except Exception as e:
+        return False, str(e)
+    return True, "Default settings restored!"
+rospy.Service("restore_default_all", Trigger, restore_default_all_handle)
+
+def clear_faults_handle(value):
+    try:
+        DRQ.clearFaults()
+    except Exception as e:
+        return False, str(e)
+    return True, "Faults cleared!"
+rospy.Service("clear_faults", Trigger, clear_faults_handle)
+
+def reg_off_handle(value):
+    try:
+        DRQ.regOff()
+    except Exception as e:
+        return False, str(e)
+    return True, "Regulator Output OFF!"
+rospy.Service("reg_off", Trigger, reg_off_handle)
+
+def reg_on_handle(value):
+    try:
+        DRQ.regOn()
+    except Exception as e:
+        return False, str(e)
+    return True, "Regulator Output ON!"
+rospy.Service("reg_on", Trigger, reg_on_handle)
+
+def get_vin_uv_limit_handle(value):
+    return DRQ.getVinUVLimit()
+rospy.Service("get_vin_uv_limit", Float, get_vin_uv_limit_handle)
+
+def get_vin_ov_limit_handle(value):
+    return DRQ.getVinOVLimit()
+rospy.Service("get_vin_ov_limit", Float, get_vin_ov_limit_handle)
+
+def get_vout_ov_limit_handle(value):
+    return DRQ.getVouOVLimit()
+rospy.Service("get_vout_ov_limit", Float, get_vout_ov_limit_handle)
+
+def get_iot_oc_limit_handle(value):
+    return DRQ.getIoutOCLimit()
+rospy.Service("get_iot_oc_limit", Float, get_iot_oc_limit_handle)
+
+def get_ot_limit_handle(value):
+    return DRQ.getOTLimit()
+rospy.Service("get_ot_limit", Float, get_ot_limit_handle)
+
+def get_ton_delay_handle(value):
+    return DRQ.getTonDelay()
+rospy.Service("get_ton_delay", Float, get_ton_delay_handle)
+
+def get_ton_rise_handle(value):
+    return DRQ.getTonRise()
+rospy.Service("get_ton_rise", Float, get_ton_rise_handle)
+
+def get_toff_delay_handle(value):
+    return DRQ.getToffDelay()
+rospy.Service("get_toff_delay", Float, get_toff_delay_handle)
+
+def get_toff_fall_handle(value):
+    return DRQ.getToffFall()
+rospy.Service("get_toff_fall", Float, get_toff_fall_handle)
+
+def get_iout_fault_response_handle(value):
+    return DRQ.getIoutFaultResponse()
+rospy.Service("get_iout_fault_response", Byte, get_iout_fault_response_handle)
+
+def get_fault_response_handle(value):
+    return DRQ.getFaultResponse(value.register)
+rospy.Service("get_fault_response", Byte, get_fault_response_handle)
 
 pub = rospy.Publisher("status", DRQ1250, queue_size=5)
 rate = rospy.Rate(30)
