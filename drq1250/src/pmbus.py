@@ -10,7 +10,7 @@ class PMBus:
     def __init__(self, addr, id=1):
         self.busID = id
         self.address = addr
-        #self.VOUT_MODE = self._readBytePMBus(0x20)
+        self.VOUT_MODE = self._readBytePMBus(0x20)
         voutN = self.VOUT_MODE & 0b00011111
         self.VOUT_N = self.twos_comp(voutN, 5)
         print("DRQ1250 succesfully connected to PMBus... \n")
