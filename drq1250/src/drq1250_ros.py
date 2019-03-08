@@ -2,7 +2,7 @@
 
 import rospy
 from drq1250.msg import DRQ1250
-from PMBus import pmbus
+from pmbus import PMBus
 import sys
 
 rospy.init_node("drq2150")
@@ -19,7 +19,7 @@ else:
 
 rospy.loginfo("Initializing PMBUS... ")
 
-DRQ = pmbus(addr) #New pmbus object with device address
+DRQ = PMBus(addr) #New pmbus object with device address
 rospy.sleep(1)
 #DRQ.setUVLimit(36.0) #Not sure if this works yet
 rospy.sleep(1)

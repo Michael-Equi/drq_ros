@@ -1,7 +1,7 @@
 from smbus import SMBus
 import math
 
-class pmbus:
+class PMBus:
 
     #constants initialized on object creation
     VOUT_MODE = 0b00000
@@ -331,7 +331,7 @@ class pmbus:
         is the same register as the STATUS_BYTE command."""
         # BUSY | OFF | VOUT_OV_Fault | IOUT_OC_FAULT | VIN_UV_FAULT | TEMPURATURE | CML (command memory logic) | None
         # VOUT Fault | IOUT Fault | POUT  Fault | INPUT Fault | MFR_Specific | PWR_GD | Fans | Other | Unknown
-        # Note: if PWR_GD is set then pwr is not good
+        # Note: if PWR_GD is set then pwr is not good (negative logic)
         self.statusSummary = self._readWordPMBus(0x79)
         status = {
             "busy" :          bool(self.statusSummary & (0b1<<15)),
