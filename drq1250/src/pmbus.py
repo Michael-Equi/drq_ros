@@ -307,6 +307,10 @@ class PMBus:
         #returns value in kHz
         return self._decodePMBus(self._readWordPMBus(0x95))
 
+    def getDutyCycle(self):
+        #returns value in %
+        return self._decodePMBus(self._readWordPMBus(0x94))
+
     def getIoutFaultResponse(self):
         #see page 37-40 on PMBus spec for info on response bytes
         return self._readBytePMBus(0x47)
