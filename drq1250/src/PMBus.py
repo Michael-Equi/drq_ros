@@ -10,7 +10,7 @@ class pmbus:
     def __init__(self, addr, id=1):
         self.busID = id
         self.address = addr
-        self.VOUT_MODE = self._readBytePMBus(0x20)
+        #self.VOUT_MODE = self._readBytePMBus(0x20)
         voutN = self.VOUT_MODE & 0b00011111
         self.VOUT_N = self.twos_comp(voutN, 5)
         print("DRQ1250 succesfully connected to PMBus... \n")
@@ -24,11 +24,12 @@ class pmbus:
 
     def _encodePMBus(self, message):
         YMAX = 1023.0
-        Nval =  int(math.log2(message/YMAX))
-        #print(bin(Nval))
-        Yval = round(message*(2.0**(-Nval)))
-        #print(bin(Yval))
-        message = (Nval << 11) | Yval
+        #print(message)
+        Nval = int(math.log(message/YMAX,2))
+        #print("NVal: " + str(Nval))
+        Yval = int(message*(2**-Nval))
+        #print("YVal: " + str(Yval))
+        message = ((Nval & 0b00011111)<<11) | Yval
         #print(bin(message))
         return message
 
@@ -66,9 +67,8 @@ class pmbus:
             uvFaultLimit = float(uvLimit)
         else:
             uvWarnLimit  = 34.0
-            uvFaultLimit = 32.0
+            uvFaultLimit = 32.
 
-        #bus.write_byte_data(self.address, 0x10, int(0b00000000))
         self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit)) #This causes an error
         self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))  #The error shows up here or if this is commented out it shows up on under the getTempurature method
 
