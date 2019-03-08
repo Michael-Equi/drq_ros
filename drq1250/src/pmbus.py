@@ -74,10 +74,10 @@ class PMBus:
             uvWarnLimit  = minUnderVolt + 2
             uvFaultLimit = minUnderVolt
 
-        print("Old VIN UV Limit: " + str(self.getVinUVLimit()))
+        #print("Old VIN UV Limit: " + str(self.getVinUVLimit()))
         self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit))
         self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))
-        print("New VIN UV Limit: " + str(self.getVinUVLimit()))
+        #print("New VIN UV Limit: " + str(self.getVinUVLimit()))
 
     def setVinOVLimit(self, ovLimit, maxOverVolt=110.0):
         """The VIN_OV_WARN_LIMIT command sets the value of the input voltage that causes an
@@ -92,10 +92,10 @@ class PMBus:
             ovWarnLimit  = maxOverVolt - 2
             ovFaultLimit = maxOverVolt
 
-        print("Old VIN OV Limit: " + str(self.getVinOVLimit()))
+        #print("Old VIN OV Limit: " + str(self.getVinOVLimit()))
         self._writeWordPMBus(0x55, self._encodePMBus(ovFaultLimit))
         self._writeWordPMBus(0x57, self._encodePMBus(ovWarnLimit))
-        print("New VIN OV Limit: " + str(self.getVinOVLimit()))
+        #print("New VIN OV Limit: " + str(self.getVinOVLimit()))
 
     def setVoutOVLimit(self, ovLimit, maxOverVolt=15.6):
         """The VOUT_OV_WARN_LIMIT command sets the value of the output voltage at the
@@ -114,10 +114,10 @@ class PMBus:
         ovWarnLimit  = int(ovWarnLimit*(2**-self.VOUT_N))
         ovFaultLimit = int(ovFaultLimit*(2**-self.VOUT_N))
 
-        print("Old VOUT OV Limit: " + str(self.getVoutOVLimit()))
+        #print("Old VOUT OV Limit: " + str(self.getVoutOVLimit()))
         self._writeWordPMBus(0x40, ovFaultLimit)
         self._writeWordPMBus(0x42, ovWarnLimit)
-        print("New VOUT OV Limit: " + str(self.getVoutOVLimit()))
+        #print("New VOUT OV Limit: " + str(self.getVoutOVLimit()))
 
     def setIoutOCLimit(self, ocLimit, maxOverCurrent=65.0):
         """The IOUT_OV_WARN_LIMIT command sets the value of the output current that causes
@@ -131,16 +131,16 @@ class PMBus:
             ocWarnLimit  = maxOverCurrent - 3
             ocFaultLimit = maxOverCurrent
 
-        print("Old IOT OC Limit: " + str(self.getIoutOCLimit()))
+        #print("Old IOT OC Limit: " + str(self.getIoutOCLimit()))
         self._writeWordPMBus(0x46, self._encodePMBus(ocFaultLimit))
         self._writeWordPMBus(0x4A, self._encodePMBus(ocWarnLimit))
-        print("New IOT OC Limit: " + str(self.getIoutOCLimit()))
+        #print("New IOT OC Limit: " + str(self.getIoutOCLimit()))
 
     def setIoutFaultResponse(self, byte):
         #see page 37-40 on PMBus spec for info on response bytes
-        print("Old IOT Fault Response: " + bin(self.getIoutFaultResponse()))
+        #print("Old IOT Fault Response: " + bin(self.getIoutFaultResponse()))
         self._writeBytePMBus(0x47, byte)
-        print("New IOT Fault Response: " + bin(self.getIoutFaultResponse()))
+        #print("New IOT Fault Response: " + bin(self.getIoutFaultResponse()))
 
     def setOTLimit(self, otLimit, maxOverTemp=145.0):
         """The OT_WARN_LIMIT command set the temperature, in degrees Celsius, of the unit at
@@ -154,10 +154,10 @@ class PMBus:
             otWarnLimit  = maxOverTemp - 3
             otFaultLimit = maxOverTemp
 
-        print("Old OT Limit: " + str(self.getOTLimit()))
+        #print("Old OT Limit: " + str(self.getOTLimit()))
         self._writeWordPMBus(0x4F, self._encodePMBus(otFaultLimit))
         self._writeWordPMBus(0x51, self._encodePMBus(otWarnLimit))
-        print("New OT Limit: " + str(self.getOTLimit()))
+        #print("New OT Limit: " + str(self.getOTLimit()))
 
     def setFaultResponse(self, register, byte):
         #see page 37-40 on PMBus spec for info on response bytes

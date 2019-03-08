@@ -1,0 +1,5 @@
+uint8 data
+uint8 register #if needed
+---
+bool success
+string message

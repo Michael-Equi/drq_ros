@@ -2,6 +2,8 @@
 
 import rospy
 from drq1250.msg import DRQ1250
+from std_srvs.srv import SetBool
+from drq1250.srv import SetValue, SetByte
 from pmbus import PMBus
 import sys
 
@@ -20,11 +22,124 @@ else:
 rospy.loginfo("Initializing PMBUS... ")
 
 DRQ = PMBus(addr) #New pmbus object with device address
-rospy.sleep(1)
-#DRQ.setUVLimit(36.0) #Not sure if this works yet
-rospy.sleep(1)
 
-pub = rospy.Publisher("rov/drq1250", DRQ1250, queue_size=1)
+#Setup services to adjust and read DRQ1250 settings
+def set_vin_uv_limit_handle(value):
+    if value.data > 32 and value.data < 75:
+        try:
+            DRQ.setVinUVLimit(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 32 and 75 volts!"
+    return True, "VIN UV Limit set to: " +  str(DRQ.getVinUVLimit())
+rospy.Service("set_vin_uv_limit", SetValue, set_vin_uv_limit_handle)
+
+def set_vin_ov_limit_handle(value):
+    if value.data > 32 and value.data < 110:
+        try:
+            DRQ.setVinOVLimit(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 32 and 110 volts!"
+    return True, "VIN OV Limit set to: " + str(DRQ.getVinOVLimit())
+rospy.Service("set_vin_ov_limit", SetValue, set_vin_ov_limit_handle)
+
+def set_vout_ov_limit_handle(value):
+    if value.data > 8.1 and value.data < 15.6:
+        try:
+            DRQ.setVoutOVLimit(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 8.1 and 15.6 volts!"
+    return True, "VOUT OV Limit set to: " + str(DRQ.getVoutOVLimit())
+rospy.Service("set_vout_ov_limit", SetValue, set_vout_ov_limit_handle)
+
+def set_iout_oc_limit_handle(value):
+    if value.data > 59 and value.data < 65:
+        try:
+            DRQ.setIoutOCLimit(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 59 and 65 amps!"
+    return True, "IOUT OC Limit set to: " + str(DRQ.getIoutOCLimit())
+rospy.Service("set_iout_oc_limit", SetValue, set_iout_oc_limit_handle)
+
+def set_ot_limit_handle(value):
+    if value.data > 30 and value.data < 145:
+        try:
+            DRQ.setOTLimit(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 30 and 145 degrees C!"
+    return True, "OT Limit set to: " + str(DRQ.getOTLimit())
+rospy.Service("set_ot_limit", SetValue, set_ot_limit_handle)
+
+def set_iout_fault_response_handle(value):
+    try:
+        DRQ.setIoutFaultResponse(value.data)
+    except Exception as e:
+        return False, str(e)
+    return True, "IOUT Fault Response set to: " + bin(DRQ.getIoutFaultResponse())
+rospy.Service("set_iout_fault_response", SetByte, set_iout_fault_response_handle)
+
+def set_fault_response_handle(value):
+    try:
+        DRQ.setFaultResponse(value.register, value.data)
+    except Exception as e:
+        return False, str(e)
+    return True, "Fault Response for " + hex(value.register) + " set to: " + bin(DRQ.getFaultResponse())
+rospy.Service("set_fault_response", SetByte, set_iout_fault_response_handle)
+
+def set_ton_delay_handle(value):
+    if value.data > 1 and value.data < 500:
+        try:
+            DRQ.setTonDelay(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 1 and 500ms"
+    return True, "Ton Delay set to: " + str(DRQ.getTonDelay())
+rospy.Service("set_ton_delay", SetValue, set_ton_delay_handle)
+
+def set_ton_rise_handle(value):
+    if value.data > 10 and value.data < 100:
+        try:
+            DRQ.setTonRise(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 10 and 100ms"
+    return True, "Ton Rise set to: " + str(DRQ.getTonRise())
+rospy.Service("set_ton_rise", SetValue, set_ton_rise_handle)
+
+def set_toff_delay_handle(value):
+    if value.data > 0 and value.data < 500:
+        try:
+            DRQ.setToffDelay(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 0 and 500ms"
+    return True, "Toff Delay set to: " + str(DRQ.getToffDelay())
+rospy.Service("set_toff_delay", SetValue, set_toff_delay_handle)
+
+def set_toff_fall_handle(value):
+    if value.data > 10 and value.data < 100:
+        try:
+            DRQ.setToffFall(value.data)
+        except Excetion as e:
+            return False, str(e)
+    else:
+        return False, "Value out of bounds, should be between 10 and 100ms"
+    return True, "Toff Fall set to: " + str(DRQ.getToffFall())
+rospy.Service("set_toff_fall", SetValue, set_toff_fall_handle)
+
+pub = rospy.Publisher("status", DRQ1250, queue_size=5)
 rate = rospy.Rate(30)
 
 while not rospy.is_shutdown():
@@ -36,6 +151,26 @@ while not rospy.is_shutdown():
     msg.Vout = DRQ.getVoltageOut()
     msg.Iout = DRQ.getCurrent()
     msg.Pout = DRQ.getPowerOut(False) #False is caclulated from given values of current and voltage while True gets values from DRQ1250
+    msg.dutyCycle = DRQ.getDutyCycle()
+    msg.switchingFreq = DRQ.getSwitchingFreq()
+
+    #handle status indicators
+    status, _ =  DRQ.getStatusSummary()
+    msg.busy          = status["busy"]
+    msg.off           = status["off"]
+    msg.vout_ov_fault = status["vout_ov_fault"]
+    msg.iout_oc_fault = status["iout_oc_fault"]
+    msg.vin_uv_fault  = status["vin_uv_fault"]
+    msg.temp_fault    = status["temp_fault"]
+    msg.cml_fault     = status["cml_fault"]
+    msg.vout_fault    = status["vout_fault"]
+    msg.iout_fault    = status["iout_fault"]
+    msg.pout_fault    = status["pout_fault"]
+    msg.input_fault   = status["input_fault"]
+    msg.pwr_gd        = status["pwr_gd"]
+    msg.fan_fault     = status["fan_fault"]
+    msg.other         = status["other"]
+    msg.unknown       = status["unknown"]
 
     pub.publish(msg)
     rate.sleep()
