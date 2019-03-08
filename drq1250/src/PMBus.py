@@ -61,30 +61,72 @@ class pmbus:
         return data
 
     ################################### Functions for setting PMBus values
-    def setUVLimit(self, uvLimit):
-
-        if(uvLimit > 32):
+    def setUVLimit(self, uvLimit, minUnderVolt=32.0):
+        """The VIN_UV_WARN_LIMIT command sets the value of the input voltage that causes an
+        input voltage low warning. This value is typically greater than the input undervoltage
+        fault threshold, VIN_UV_FAULT_LIMIT (Section 15.27). The VIN_UV_FAULT_LIMIT
+        command sets the value of the input voltage that causes an input undervoltage fault."""
+        if(uvLimit > minUnderVolt):
             uvWarnLimit  = float(uvLimit) + 2
             uvFaultLimit = float(uvLimit)
         else:
-            uvWarnLimit  = 34.0
-            uvFaultLimit = 32.0
+            uvWarnLimit  = minUnderVolt + 2
+            uvFaultLimit = minUnderVolt
 
         self._writeWordPMBus(0x59, self._encodePMBus(uvFaultLimit))
         self._writeWordPMBus(0x58, self._encodePMBus(uvWarnLimit))
 
         self.storeUserAll()
 
+    def setTonDelay(self, delay, maxDelay=500):
+        """The TON_DELAY sets the time, in milliseconds, from when a start condition
+        is received (as programmed by the ON_OFF_CONFIG command) until the output
+        voltage starts to rise."""
+        if abs(delay) > maxDelay:
+            delay = maxDelay
+
+        self._writeWordPMBus(0x60, self._encodePMBus(abs(delay)))
+
+    def setToffDelay(self, delay, maxDelay=500):
+        """The TOFF_DELAY sets the time, in milliseconds, from a stop condition
+        is received (as programmed by the ON_OFF_CONFIG command) until the unit
+        stops transferring energy to the output."""
+        if abs(delay) > maxDelay:
+            delay = maxDelay
+
+        self._writeWordPMBus(0x64, self._encodePMBus(abs(delay)))
+
+
     def storeUserAll(self):
+        """The STORE_USER_ALL command instructs the PMBus device to copy the entire
+        contents of the Operating Memory to the matching locations in the non-volatile User
+        Store memory. Any items in Operating Memory that do not have matching locations in
+        the User Store are ignored."""
         self._writeBytePMBus(0x15,0x00)
 
     def restoreUserAll(self):
+        """The RESTORE_USER_ALL command instructs the PMBus device to copy the entire
+        contents of the non-volatile User Store memory to the matching locations in the
+        Operating Memory. The values in the Operating Memory are overwritten by the value
+        retrieved from the User Store. Any items in User Store that do not have matching
+        locations in the Operating Memory are ignored."""
         self._writeBytePMBus(0x16,0x00)
 
     def restoreDefaultAll(self):
+        """The RESTORE_DEFAULT_ALL command instructs the PMBus device to copy the entire
+        contents of the non-volatile Default Store memory to the matching locations in the
+        Operating Memory. The values in the Operating Memory are overwritten by the value
+        retrieved from the Default Store. Any items in Default Store that do not have matching
+        locations in the Operating Memory are ignored."""
         self._writeBytePMBus(0x12,0x00)
 
     def clearFaults(self):
+        """The CLEAR_FAULTS command is used to clear any fault bits that have been set. This
+        command clears all bits in all status registers simultaneously. At the same time, the
+        device negates (clears, releases) its SMBALERT# signal output if the device is asserting
+        the SMBALERT# signal.The CLEAR_FAULTS does not cause a unit that has latched off for a
+        fault condition to restart. Units that have shut down for a fault condition are restarted
+        as described in Section 10.7."""
         self._writeBytePMBus(0x03,0x00)
 
     #See PMBus spec page 53-54 for information on the on/off functionality
@@ -127,6 +169,10 @@ class pmbus:
     #members for getting the status of the DRQ device
     #see PMBUS spec part two pages 77-79
     def getStatusSummary(self):
+        """The STATUS_WORD command returns two bytes of information with a summary of the
+        unit's fault condition. Based on the information in these bytes, the host can get more
+        information by reading the appropriate status registers. The low byte of the STATUS_WORD
+        is the same register as the STATUS_BYTE command."""
         # BUSY | OFF | VOUT_OV_Fault | IOUT_OC_FAULT | VIN_UV_FAULT | TEMPURATURE | CML (command memory logic) | None
         # VOUT Fault | IOUT Fault | POUT  Fault | INPUT Fault | MFR_Specific | PWR_GD | Fans | Other | Unknown
         # Note: if PWR_GD is set then pwr is not good
