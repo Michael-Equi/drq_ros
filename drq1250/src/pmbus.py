@@ -338,21 +338,20 @@ class PMBus:
         # Note: if PWR_GD is set then pwr is not good (negative logic)
         self.statusSummary = self._readWordPMBus(0x79)
         status = {
-            "busy" :          bool(self.statusSummary & (0b1<<15)),
-            "off" :           bool(self.statusSummary & (0b1<<14)),
-            "vout_ov_fault" : bool(self.statusSummary & (0b1<<13)),
-            "iout_oc_fault" : bool(self.statusSummary & (0b1<<12)),
-            "vin_uv_fault" :  bool(self.statusSummary & (0b1<<11)),
-            "temp_fault" :    bool(self.statusSummary & (0b1<<10)),
-            "cml_fault" :     bool(self.statusSummary & (0b1<<9)),
-            "vout_fault" :    bool(self.statusSummary & (0b1<<7)),
-            "iout_fault" :    bool(self.statusSummary & (0b1<<6)),
-            "pout_fault" :    bool(self.statusSummary & (0b1<<5)),
-            "input_fault" :   bool(self.statusSummary & (0b1<<4)),
-            "pwr_gd" :        not bool(self.statusSummary & (0b1<<3)),
-            "fan_fault" :     bool(self.statusSummary & (0b1<<2)),
-            "other" :         bool(self.statusSummary & (0b1<<1)),
-            "unknown" :       bool(self.statusSummary & (0b1<<0)),
+            "busy" :          bool(self.statusSummary & (0b1<<7)),
+            "off" :           bool(self.statusSummary & (0b1<<6)),
+            "vout_ov_fault" : bool(self.statusSummary & (0b1<<5)),
+            "iout_oc_fault" : bool(self.statusSummary & (0b1<<4)),
+            "vin_uv_fault" :  bool(self.statusSummary & (0b1<<3)),
+            "temp_fault" :    bool(self.statusSummary & (0b1<<2)),
+            "cml_fault" :     bool(self.statusSummary & (0b1<<1)),
+            "vout_fault" :    bool(self.statusSummary & (0b1<<15)),
+            "iout_fault" :    bool(self.statusSummary & (0b1<<14)),
+            "input_fault" :   bool(self.statusSummary & (0b1<<13)),
+            "pwr_gd" :        not bool(self.statusSummary & (0b1<<11)),
+            "fan_fault" :     bool(self.statusSummary & (0b1<<10)),
+            "other" :         bool(self.statusSummary & (0b1<<9)),
+            "unknown" :       bool(self.statusSummary & (0b1<<8)),
         }
         return status, self.statusSummary
 

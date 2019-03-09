@@ -25,7 +25,7 @@ DRQ = PMBus(addr) #New pmbus object with device address
 
 #Setup services to adjust and read DRQ1250 settings
 def set_vin_uv_limit_handle(value):
-    if value.data > 32 and value.data < 75:
+    if value.data >= 32 and value.data <= 75:
         try:
             DRQ.setVinUVLimit(value.data)
         except Excetion as e:
@@ -36,7 +36,7 @@ def set_vin_uv_limit_handle(value):
 rospy.Service("set_vin_uv_limit", SetValue, set_vin_uv_limit_handle)
 
 def set_vin_ov_limit_handle(value):
-    if value.data > 32 and value.data < 110:
+    if value.data >= 32 and value.data <= 110:
         try:
             DRQ.setVinOVLimit(value.data)
         except Excetion as e:
@@ -47,7 +47,7 @@ def set_vin_ov_limit_handle(value):
 rospy.Service("set_vin_ov_limit", SetValue, set_vin_ov_limit_handle)
 
 def set_vout_ov_limit_handle(value):
-    if value.data > 8.1 and value.data < 15.6:
+    if value.data >= 8.1 and value.data <= 15.6:
         try:
             DRQ.setVoutOVLimit(value.data)
         except Excetion as e:
@@ -58,7 +58,7 @@ def set_vout_ov_limit_handle(value):
 rospy.Service("set_vout_ov_limit", SetValue, set_vout_ov_limit_handle)
 
 def set_iout_oc_limit_handle(value):
-    if value.data > 59 and value.data < 65:
+    if value.data >= 59 and value.data <= 65:
         try:
             DRQ.setIoutOCLimit(value.data)
         except Excetion as e:
@@ -69,7 +69,7 @@ def set_iout_oc_limit_handle(value):
 rospy.Service("set_iout_oc_limit", SetValue, set_iout_oc_limit_handle)
 
 def set_ot_limit_handle(value):
-    if value.data > 30 and value.data < 145:
+    if value.data >= 30 and value.data <= 145:
         try:
             DRQ.setOTLimit(value.data)
         except Excetion as e:
@@ -96,7 +96,7 @@ def set_fault_response_handle(value):
 rospy.Service("set_fault_response", SetByte, set_iout_fault_response_handle)
 
 def set_ton_delay_handle(value):
-    if value.data > 1 and value.data < 500:
+    if value.data >= 1 and value.data <= 500:
         try:
             DRQ.setTonDelay(value.data)
         except Excetion as e:
@@ -107,7 +107,7 @@ def set_ton_delay_handle(value):
 rospy.Service("set_ton_delay", SetValue, set_ton_delay_handle)
 
 def set_ton_rise_handle(value):
-    if value.data > 10 and value.data < 100:
+    if value.data >= 10 and value.data <= 100:
         try:
             DRQ.setTonRise(value.data)
         except Excetion as e:
@@ -118,7 +118,7 @@ def set_ton_rise_handle(value):
 rospy.Service("set_ton_rise", SetValue, set_ton_rise_handle)
 
 def set_toff_delay_handle(value):
-    if value.data > 0 and value.data < 500:
+    if value.data >= 0 and value.data <= 500:
         try:
             DRQ.setToffDelay(value.data)
         except Excetion as e:
@@ -129,7 +129,7 @@ def set_toff_delay_handle(value):
 rospy.Service("set_toff_delay", SetValue, set_toff_delay_handle)
 
 def set_toff_fall_handle(value):
-    if value.data > 10 and value.data < 100:
+    if value.data >= 10 and value.data <= 100:
         try:
             DRQ.setToffFall(value.data)
         except Excetion as e:
@@ -196,7 +196,7 @@ def get_vin_ov_limit_handle(value):
 rospy.Service("get_vin_ov_limit", Float, get_vin_ov_limit_handle)
 
 def get_vout_ov_limit_handle(value):
-    return DRQ.getVouOVLimit()
+    return DRQ.getVoutOVLimit()
 rospy.Service("get_vout_ov_limit", Float, get_vout_ov_limit_handle)
 
 def get_iot_oc_limit_handle(value):
@@ -257,7 +257,6 @@ while not rospy.is_shutdown():
     msg.cml_fault     = status["cml_fault"]
     msg.vout_fault    = status["vout_fault"]
     msg.iout_fault    = status["iout_fault"]
-    msg.pout_fault    = status["pout_fault"]
     msg.input_fault   = status["input_fault"]
     msg.pwr_gd        = status["pwr_gd"]
     msg.fan_fault     = status["fan_fault"]

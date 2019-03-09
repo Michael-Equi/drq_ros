@@ -18,7 +18,6 @@ bool temp_fault
 bool cml_fault
 bool vout_fault
 bool iout_fault
-bool pout_fault
 bool input_fault
 bool pwr_gd
 bool fan_fault
