@@ -131,16 +131,16 @@ class PMBus:
             ocWarnLimit  = maxOverCurrent - 3
             ocFaultLimit = maxOverCurrent
 
-        #print("Old IOT OC Limit: " + str(self.getIoutOCLimit()))
+        #print("Old IOUT OC Limit: " + str(self.getIoutOCLimit()))
         self._writeWordPMBus(0x46, self._encodePMBus(ocFaultLimit))
         self._writeWordPMBus(0x4A, self._encodePMBus(ocWarnLimit))
-        #print("New IOT OC Limit: " + str(self.getIoutOCLimit()))
+        #print("New IOUT OC Limit: " + str(self.getIoutOCLimit()))
 
     def setIoutFaultResponse(self, byte):
         #see page 37-40 on PMBus spec for info on response bytes
-        #print("Old IOT Fault Response: " + bin(self.getIoutFaultResponse()))
+        #print("Old IOUT Fault Response: " + bin(self.getIoutFaultResponse()))
         self._writeBytePMBus(0x47, byte)
-        #print("New IOT Fault Response: " + bin(self.getIoutFaultResponse()))
+        #print("New IOUT Fault Response: " + bin(self.getIoutFaultResponse()))
 
     def setOTLimit(self, otLimit, maxOverTemp=145.0):
         """The OT_WARN_LIMIT command set the temperature, in degrees Celsius, of the unit at

@@ -99,7 +99,7 @@ def set_ton_delay_handle(value):
     if value.data >= 1 and value.data <= 500:
         try:
             DRQ.setTonDelay(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 1 and 500ms"
@@ -110,7 +110,7 @@ def set_ton_rise_handle(value):
     if value.data >= 10 and value.data <= 100:
         try:
             DRQ.setTonRise(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 10 and 100ms"
@@ -121,7 +121,7 @@ def set_toff_delay_handle(value):
     if value.data >= 0 and value.data <= 500:
         try:
             DRQ.setToffDelay(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 0 and 500ms"
@@ -132,7 +132,7 @@ def set_toff_fall_handle(value):
     if value.data >= 10 and value.data <= 100:
         try:
             DRQ.setToffFall(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 10 and 100ms"
@@ -199,9 +199,9 @@ def get_vout_ov_limit_handle(value):
     return DRQ.getVoutOVLimit()
 rospy.Service("get_vout_ov_limit", Float, get_vout_ov_limit_handle)
 
-def get_iot_oc_limit_handle(value):
+def get_iout_oc_limit_handle(value):
     return DRQ.getIoutOCLimit()
-rospy.Service("get_iot_oc_limit", Float, get_iot_oc_limit_handle)
+rospy.Service("get_iout_oc_limit", Float, get_iout_oc_limit_handle)
 
 def get_ot_limit_handle(value):
     return DRQ.getOTLimit()
