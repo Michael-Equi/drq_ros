@@ -32,7 +32,7 @@ def set_vin_uv_limit_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 32 and 75 volts!"
-    return SetValueResponse(True, ("VIN UV Limit set to: " +  str(DRQ.getVinUVLimit())))
+    return True, "VIN UV Limit set to: " +  str(DRQ.getVinUVLimit())
 rospy.Service("set_vin_uv_limit", SetValue, set_vin_uv_limit_handle)
 
 def set_vin_ov_limit_handle(value):
@@ -43,7 +43,7 @@ def set_vin_ov_limit_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 32 and 110 volts!"
-    return SetValueResponse(True, ("VIN OV Limit set to: " + str(DRQ.getVinOVLimit())))
+    return True, "VIN OV Limit set to: " + str(DRQ.getVinOVLimit())
 rospy.Service("set_vin_ov_limit", SetValue, set_vin_ov_limit_handle)
 
 def set_vout_ov_limit_handle(value):
@@ -54,7 +54,7 @@ def set_vout_ov_limit_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 8.1 and 15.6 volts!"
-    return SetValueResponse(True, ("VOUT OV Limit set to: " + str(DRQ.getVoutOVLimit())))
+    return True, "VOUT OV Limit set to: " + str(DRQ.getVoutOVLimit())
 rospy.Service("set_vout_ov_limit", SetValue, set_vout_ov_limit_handle)
 
 def set_iout_oc_limit_handle(value):
@@ -65,7 +65,7 @@ def set_iout_oc_limit_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 59 and 65 amps!"
-    return SetValueResponse(True, ("IOUT OC Limit set to: " + str(DRQ.getIoutOCLimit())))
+    return True, "IOUT OC Limit set to: " + str(DRQ.getIoutOCLimit())
 rospy.Service("set_iout_oc_limit", SetValue, set_iout_oc_limit_handle)
 
 def set_ot_limit_handle(value):
@@ -76,7 +76,7 @@ def set_ot_limit_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 30 and 145 degrees C!"
-    return SetValueResponse(True, ("OT Limit set to: " + str(DRQ.getOTLimit())))
+    return True, "OT Limit set to: " + str(DRQ.getOTLimit())
 rospy.Service("set_ot_limit", SetValue, set_ot_limit_handle)
 
 def set_iout_fault_response_handle(value):
@@ -84,7 +84,7 @@ def set_iout_fault_response_handle(value):
         DRQ.setIoutFaultResponse(value.data)
     except Exception as e:
         return False, str(e)
-    return SetValueResponse(True, ("IOUT Fault Response set to: " + bin(DRQ.getIoutFaultResponse())))
+    return True, "IOUT Fault Response set to: " + bin(DRQ.getIoutFaultResponse())
 rospy.Service("set_iout_fault_response", SetByte, set_iout_fault_response_handle)
 
 def set_fault_response_handle(value):
@@ -92,7 +92,7 @@ def set_fault_response_handle(value):
         DRQ.setFaultResponse(value.register, value.data)
     except Exception as e:
         return False, str(e)
-    return SetValueResponse(True, ("Fault Response for " + hex(value.register) + " set to: " + bin(DRQ.getFaultResponse())))
+    return True, "Fault Response for " + hex(value.register) + " set to: " + bin(DRQ.getFaultResponse())
 rospy.Service("set_fault_response", SetByte, set_iout_fault_response_handle)
 
 def set_ton_delay_handle(value):
@@ -103,7 +103,7 @@ def set_ton_delay_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 1 and 500ms"
-    return SetValueResponse(True, ("Ton Delay set to: " + str(DRQ.getTonDelay())))
+    return True, "Ton Delay set to: " + str(DRQ.getTonDelay())
 rospy.Service("set_ton_delay", SetValue, set_ton_delay_handle)
 
 def set_ton_rise_handle(value):
@@ -114,7 +114,7 @@ def set_ton_rise_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 10 and 100ms"
-    return SetValueResponse(True, ("Ton Rise set to: " + str(DRQ.getTonRise())))
+    return True, "Ton Rise set to: " + str(DRQ.getTonRise())
 rospy.Service("set_ton_rise", SetValue, set_ton_rise_handle)
 
 def set_toff_delay_handle(value):
@@ -125,7 +125,7 @@ def set_toff_delay_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 0 and 500ms"
-    return SetValueResponse(True, ("Toff Delay set to: " + str(DRQ.getToffDelay())))
+    return True, "Toff Delay set to: " + str(DRQ.getToffDelay())
 rospy.Service("set_toff_delay", SetValue, set_toff_delay_handle)
 
 def set_toff_fall_handle(value):
@@ -136,7 +136,7 @@ def set_toff_fall_handle(value):
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 10 and 100ms"
-    return SetValueResponse(True, ("Toff Fall set to: " + str(DRQ.getToffFall())))
+    return True, "Toff Fall set to: " + str(DRQ.getToffFall())
 rospy.Service("set_toff_fall", SetValue, set_toff_fall_handle)
 
 def store_user_all_handle(value):
@@ -144,7 +144,7 @@ def store_user_all_handle(value):
         DRQ.storeUserAll()
     except Exception as e:
         return False, str(e)
-    return TriggerResponse(True, "User settings stored!")
+    return True, "User settings stored!"
 rospy.Service("store_user_all", Trigger, store_user_all_handle)
 
 def restore_user_all_handle(value):
@@ -152,7 +152,7 @@ def restore_user_all_handle(value):
         DRQ.restoreUserAll()
     except Exception as e:
         return False, str(e)
-    return TriggerResponse(True, "User settings restored!")
+    return True, "User settings restored!"
 rospy.Service("restore_user_all", Trigger, restore_user_all_handle)
 
 def restore_default_all_handle(value):
@@ -160,7 +160,7 @@ def restore_default_all_handle(value):
         DRQ.restoreDefaultAll()
     except Exception as e:
         return False, str(e)
-    return TriggerResponse(True, "Default settings restored!")
+    return True, "Default settings restored!"
 rospy.Service("restore_default_all", Trigger, restore_default_all_handle)
 
 def clear_faults_handle(value):
@@ -168,7 +168,7 @@ def clear_faults_handle(value):
         DRQ.clearFaults()
     except Exception as e:
         return False, str(e)
-    return TriggerResponse(TrTrue, "Faults cleared!")
+    return True, "Faults cleared!"
 rospy.Service("clear_faults", Trigger, clear_faults_handle)
 
 def reg_off_handle(value):
@@ -176,7 +176,7 @@ def reg_off_handle(value):
         DRQ.regOff()
     except Exception as e:
         return False, str(e)
-    return TriggerResponse(True, "Regulator Output OFF!")
+    return True, "Regulator Output OFF!"
 rospy.Service("reg_off", Trigger, reg_off_handle)
 
 def reg_on_handle(value):
@@ -184,7 +184,7 @@ def reg_on_handle(value):
         DRQ.regOn()
     except Exception as e:
         return False, str(e)
-    return TriggerResponse(True, "Regulator Output ON!")
+    return True, "Regulator Output ON!"
 rospy.Service("reg_on", Trigger, reg_on_handle)
 
 def get_vin_uv_limit_handle(value):
@@ -204,7 +204,7 @@ def get_iout_oc_limit_handle(value):
 rospy.Service("get_iout_oc_limit", Float, get_iout_oc_limit_handle)
 
 def get_ot_limit_handle(value):
-    return DRQ.getOTLimit()
+    return (DRQ.getOTLimit())
 rospy.Service("get_ot_limit", Float, get_ot_limit_handle)
 
 def get_ton_delay_handle(value):
