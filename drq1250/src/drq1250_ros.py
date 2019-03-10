@@ -234,34 +234,47 @@ rospy.Service("get_fault_response", Byte, get_fault_response_handle)
 pub = rospy.Publisher("status", DRQ1250, queue_size=5)
 rate = rospy.Rate(30)
 
+failCounter = 0
 while not rospy.is_shutdown():
-    msg = DRQ1250()
-    msg.header.stamp = rospy.Time.now()
-    msg.header.frame_id = 'drq1250'
-    msg.tempurature = DRQ.getTempurature()
-    msg.Vin = DRQ.getVoltageIn()
-    msg.Vout = DRQ.getVoltageOut()
-    msg.Iout = DRQ.getCurrent()
-    msg.Pout = DRQ.getPowerOut(False) #False is caclulated from given values of current and voltage while True gets values from DRQ1250
-    msg.dutyCycle = DRQ.getDutyCycle()
-    msg.switchingFreq = DRQ.getSwitchingFreq()
+    try:
+        msg = DRQ1250()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = 'drq1250'
+        msg.tempurature = DRQ.getTempurature()
+        msg.Vin = DRQ.getVoltageIn()
+        msg.Vout = DRQ.getVoltageOut()
+        msg.Iout = DRQ.getCurrent()
+        msg.Pout = DRQ.getPowerOut(False) #False is caclulated from given values of current and voltage while True gets values from DRQ1250
+        msg.dutyCycle = DRQ.getDutyCycle()
+        msg.switchingFreq = DRQ.getSwitchingFreq()
 
-    #handle status indicators
-    status, _ =  DRQ.getStatusSummary()
-    msg.busy          = status["busy"]
-    msg.off           = status["off"]
-    msg.vout_ov_fault = status["vout_ov_fault"]
-    msg.iout_oc_fault = status["iout_oc_fault"]
-    msg.vin_uv_fault  = status["vin_uv_fault"]
-    msg.temp_fault    = status["temp_fault"]
-    msg.cml_fault     = status["cml_fault"]
-    msg.vout_fault    = status["vout_fault"]
-    msg.iout_fault    = status["iout_fault"]
-    msg.input_fault   = status["input_fault"]
-    msg.pwr_gd        = status["pwr_gd"]
-    msg.fan_fault     = status["fan_fault"]
-    msg.other         = status["other"]
-    msg.unknown       = status["unknown"]
+        #handle status indicators
+        status, _ =  DRQ.getStatusSummary()
+        msg.busy          = status["busy"]
+        msg.off           = status["off"]
+        msg.vout_ov_fault = status["vout_ov_fault"]
+        msg.iout_oc_fault = status["iout_oc_fault"]
+        msg.vin_uv_fault  = status["vin_uv_fault"]
+        msg.temp_fault    = status["temp_fault"]
+        msg.cml_fault     = status["cml_fault"]
+        msg.vout_fault    = status["vout_fault"]
+        msg.iout_fault    = status["iout_fault"]
+        msg.input_fault   = status["input_fault"]
+        msg.pwr_gd        = status["pwr_gd"]
+        msg.fan_fault     = status["fan_fault"]
+        msg.other         = status["other"]
+        msg.unknown       = status["unknown"]
 
-    pub.publish(msg)
+        pub.publish(msg)
+
+        failCounter = 0
+        
+    except Exception as e:
+        rospy.logdebug(str(e))
+        failCounter += 1
+
+    if failCounter > 10:
+        rospy.logerr("DRQ1250 lost connection!")
+        exit(1)
+    
     rate.sleep()
