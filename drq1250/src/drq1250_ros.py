@@ -28,7 +28,7 @@ def set_vin_uv_limit_handle(value):
     if value.data >= 32 and value.data <= 75:
         try:
             DRQ.setVinUVLimit(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 32 and 75 volts!"
@@ -39,7 +39,7 @@ def set_vin_ov_limit_handle(value):
     if value.data >= 32 and value.data <= 110:
         try:
             DRQ.setVinOVLimit(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 32 and 110 volts!"
@@ -50,7 +50,7 @@ def set_vout_ov_limit_handle(value):
     if value.data >= 8.1 and value.data <= 15.6:
         try:
             DRQ.setVoutOVLimit(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 8.1 and 15.6 volts!"
@@ -61,7 +61,7 @@ def set_iout_oc_limit_handle(value):
     if value.data >= 59 and value.data <= 65:
         try:
             DRQ.setIoutOCLimit(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 59 and 65 amps!"
@@ -72,7 +72,7 @@ def set_ot_limit_handle(value):
     if value.data >= 30 and value.data <= 145:
         try:
             DRQ.setOTLimit(value.data)
-        except Excetion as e:
+        except Exception as e:
             return False, str(e)
     else:
         return False, "Value out of bounds, should be between 30 and 145 degrees C!"
