@@ -19,7 +19,7 @@ class PMBus:
     def _decodePMBus(self, message):
         messageN = message >> 11
         messageY = message & 0b0000011111111111
-        message = messageY*(2.0**(self.twos_comp(messageN, 5))) #calculate real values (everything but VOUT works)
+        message = messageY*(2.0**(self.twos_comp(messageN, 5))) #calculate real values
         return message
 
     def _encodePMBus(self, message):
